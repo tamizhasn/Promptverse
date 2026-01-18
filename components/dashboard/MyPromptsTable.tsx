@@ -16,25 +16,34 @@ type Prompt = {
 export default function MyPromptsTable() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  /* ============================
-     📡 FETCH ADMIN PROMPTS
-  ============================ */
   const fetchPrompts = async () => {
-    setLoading(true);
-    const res = await fetch("/api/admin/analytics");
-    const data = await res.json();
-    setPrompts(data.prompts || []);
-    setLoading(false);
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch("/api/admin/analytics", {
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to load prompts");
+      }
+
+      const data = await res.json();
+      setPrompts(data.prompts ?? []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchPrompts();
   }, []);
 
-  /* ============================
-     🚫 HIDE PROMPT (SOFT DELETE)
-  ============================ */
   const hidePrompt = async (id: string) => {
     await fetch(`/api/prompts/${id}`, {
       method: "PATCH",
@@ -44,12 +53,8 @@ export default function MyPromptsTable() {
     fetchPrompts();
   };
 
-  /* ============================
-     🗑️ DELETE PROMPT (HARD)
-  ============================ */
   const deletePrompt = async (id: string) => {
-    const ok = confirm("Delete this prompt permanently?");
-    if (!ok) return;
+    if (!confirm("Delete this prompt permanently?")) return;
 
     await fetch(`/api/prompts/${id}`, {
       method: "DELETE",
@@ -61,6 +66,14 @@ export default function MyPromptsTable() {
     return (
       <div className="glass rounded-xl p-6">
         <p className="text-zinc-400">Loading prompts...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="glass rounded-xl p-6 text-red-400">
+        {error}
       </div>
     );
   }
@@ -94,7 +107,6 @@ export default function MyPromptsTable() {
                 key={p._id}
                 className="border-t border-white/10 hover:bg-white/5 transition"
               >
-                {/* Preview */}
                 <td>
                   <img
                     src={p.previewImage || "/sample-prompt.png"}
@@ -102,24 +114,15 @@ export default function MyPromptsTable() {
                   />
                 </td>
 
-                {/* Title */}
                 <td className="max-w-[200px] truncate">
                   {p.title}
                 </td>
 
-                {/* Category */}
                 <td>{p.category || "-"}</td>
-
-                {/* Views */}
                 <td className="text-center">{p.views}</td>
-
-                {/* Likes */}
                 <td className="text-center">{p.likes}</td>
-
-                {/* Copies */}
                 <td className="text-center">{p.copies}</td>
 
-                {/* Status */}
                 <td>
                   <span
                     className={`text-xs ${
@@ -132,7 +135,6 @@ export default function MyPromptsTable() {
                   </span>
                 </td>
 
-                {/* Actions */}
                 <td className="flex gap-3 py-2">
                   <button
                     onClick={() => hidePrompt(p._id)}

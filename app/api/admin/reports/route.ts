@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
+import Report from "@/models/Report";
 import Prompt from "@/models/Prompt";
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
@@ -15,26 +16,21 @@ export async function GET() {
   await connectDB();
 
   const adminId = new mongoose.Types.ObjectId(session.user.id);
-  console.log("SESSION USER ID:", session.user.id);
 
-  // 🔒 STRICT OWNERSHIP FILTER
-  const prompts = await Prompt.find({
-    createdBy: adminId,
-  }).lean();
-
-  const totals = prompts.reduce(
-    (acc, p) => {
-      acc.prompts += 1;
-      acc.views += p.views ?? 0;
-      acc.likes += p.likes ?? 0;
-      acc.copies += p.copies ?? 0;
-      return acc;
-    },
-    { prompts: 0, views: 0, likes: 0, copies: 0 }
+  // 🔑 Get admin's prompt IDs
+  const prompts = await Prompt.find(
+    { createdBy: adminId },
+    { _id: 1 }
   );
 
-  return NextResponse.json({
-    totals,
-    prompts,
-  });
+  const promptIds = prompts.map((p) => p._id);
+
+  // 🔒 Only reports for admin's prompts
+  const reports = await Report.find({
+    promptId: { $in: promptIds },
+  })
+    .populate("promptId", "title")
+    .sort({ createdAt: -1 });
+
+  return NextResponse.json({ reports });
 }

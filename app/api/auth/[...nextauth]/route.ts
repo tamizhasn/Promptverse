@@ -1,18 +1,10 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 
-/**
- * ✅ Export authOptions
- * This is REQUIRED for getServerSession (Admin Dashboard, etc.)
- */
 export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: "jwt",
-  },
-
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -20,7 +12,6 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
           return null;
@@ -30,15 +21,10 @@ export const authOptions: NextAuthOptions = {
 
         const user = await User.findOne({
           email: credentials.email,
-        }).select("+password profileImage name role isActive");
+        }).select("+password name role profileImage");
 
         if (!user) {
           throw new Error("User not found");
-        }
-
-        // 🚫 Block suspended users
-        if (user.isActive === false) {
-          throw new Error("Account suspended");
         }
 
         const isValid = await bcrypt.compare(
@@ -51,7 +37,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user._id.toString(),
+          id: user._id.toString(), // 🔑 REQUIRED
           name: user.name,
           email: user.email,
           role: user.role,
@@ -61,21 +47,27 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
+  session: {
+    strategy: "jwt", 
+  },
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.name = (user as any).name;
+        token.id = user.id;
         token.role = (user as any).role;
-        token.image = (user as any).image;
+        token.image = user.image;
+        token.name = user.name;
       }
       return token;
     },
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.name = token.name as string;
+        session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.image = token.image as string;
+        session.user.image = token.image ?? undefined;
+        session.user.name = token.name as string;
       }
       return session;
     },
@@ -84,13 +76,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/admin/login",
   },
-
-  secret: process.env.NEXTAUTH_SECRET,
 };
 
-/**
- * ✅ NextAuth handler
- */
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
