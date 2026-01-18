@@ -15,7 +15,6 @@ export async function GET() {
   await connectDB();
 
   const adminId = new mongoose.Types.ObjectId(session.user.id);
-  console.log("SESSION USER ID:", session.user.id);
 
   // 🔒 STRICT OWNERSHIP FILTER
   const prompts = await Prompt.find({
