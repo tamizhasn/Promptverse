@@ -14,6 +14,67 @@ body {
   box-shadow: 0 0 40px rgba(99, 102, 241, 0.35);
 }
 
+/* 🧩 Black–White Line Grid Background */
+/* 🧩 Animated Moving Grid Background */
+.grid-bg {
+  min-height: 100vh;
+  background-color: #0a0a0a;
+
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px
+    );
+
+  background-size: 40px 40px;
+  animation: gridMove 60s linear infinite;
+}
+
+.grid-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.65) 100%
+  );
+}
+
+
+/* 🔁 Subtle grid motion */
+@keyframes gridMove {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 400px 400px, 400px 400px;
+  }
+}
+
+
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.25s ease-out forwards;
+}
 
 
 .container-app {

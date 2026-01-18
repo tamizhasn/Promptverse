@@ -17,7 +17,7 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <div className="container-app space-y-12 py-10">
+    <div className="container-app space-y-12 py-10 grid-bg">
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
       <StatsCards />

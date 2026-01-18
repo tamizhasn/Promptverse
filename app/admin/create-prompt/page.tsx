@@ -63,7 +63,7 @@ export default function CreatePromptPage() {
   };
 
   return (
-    <div className="container-app mt-10 max-w-4xl">
+    <div className="container-app mt-10 max-w-4xl grid-bg">
       <h1 className="mb-6 text-3xl font-bold">Create Prompt</h1>
 
       {error && (

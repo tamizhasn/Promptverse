@@ -1,35 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+
 import Navbar from "@/components/Navbar";
 import PromptInput from "@/components/PromptInput";
-import SamplePrompts from "@/components/SamplePrompts";
-import PromptCard from "@/components/PromptCard";
+import SamplePromptsMarquee from "@/components/SamplePromptsMarquee";
+import PromptGrid from "@/components/PromptGrid";
 
 export default function Home() {
   const [prompts, setPrompts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔥 FETCH PROMPTS
   useEffect(() => {
-    const fetchPrompts = async () => {
-      try {
-        const res = await fetch("/api/prompts");
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-          setPrompts(data);
-        } else {
-          setPrompts([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch prompts", error);
-        setPrompts([]);
-      } finally {
+    fetch("/api/prompts")
+      .then((res) => res.json())
+      .then((data) => {
+        setPrompts(data || []);
         setLoading(false);
-      }
-    };
-
-    fetchPrompts();
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   return (
@@ -37,36 +28,40 @@ export default function Home() {
       <Navbar />
 
       {/* HERO */}
-      <section className="container-app pt-20">
-        <h1 className="mb-6 text-center text-4xl font-bold">
+      <section className="container-app pt-28 text-center">
+        {/* Brand */}
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-4 text-5xl font-extrabold"
+        >
+          <span className="text-white">Prompt</span>
+          <span className="text-indigo-400">Verse</span>
+        </motion.h1>
+
+        {/* Subtitle */}
+        <motion.h2
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+          className="mb-10 text-3xl text-zinc-300"
+        >
           Discover Powerful AI Prompts
-        </h1>
+        </motion.h2>
+
         <PromptInput />
       </section>
 
-      {/* DESCRIPTION */}
-      <section className="mx-auto mt-20 max-w-4xl px-6 text-center text-zinc-400">
-        PromptVerse helps you find curated AI prompts for image generation,
-        web apps, automation, and content creation — faster and smarter.
-      </section>
-
       {/* SAMPLE PROMPTS */}
-      <SamplePrompts />
+      <SamplePromptsMarquee />
 
       {/* ALL PROMPTS */}
-      <section className="container-prompts mt-20">
-        <h2 className="mb-6 text-2xl font-semibold">All Prompts</h2>
-
+      <section className="mt-24">
         {loading ? (
-          <p className="text-zinc-400">Loading prompts...</p>
-        ) : prompts.length === 0 ? (
-          <p className="text-zinc-400">No prompts available</p>
+          <p className="text-center text-zinc-400">Loading prompts...</p>
         ) : (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {prompts.map((prompt) => (
-              <PromptCard key={prompt._id} prompt={prompt} />
-            ))}
-          </div>
+          <PromptGrid prompts={prompts} />
         )}
       </section>
     </>

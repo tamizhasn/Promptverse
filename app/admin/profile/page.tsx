@@ -57,7 +57,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="container-app mt-10 max-w-3xl">
+    <div className="container-app mt-10 max-w-3xl grid-bg">
       <h1 className="mb-6 text-3xl font-bold">Edit Profile</h1>
 
       <div className="glass rounded-xl p-6 space-y-6">

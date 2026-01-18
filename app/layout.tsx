@@ -13,8 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning>
+      <body className="grid-bg" suppressHydrationWarning>
         <Providers>{children}</Providers>
+        <div id="modal-root" />
       </body>
     </html>
   );
