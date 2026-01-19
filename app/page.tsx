@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 
 import Navbar from "@/components/Navbar";
@@ -12,20 +12,45 @@ export default function Home() {
   const [prompts, setPrompts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 FETCH PROMPTS
+  // 🔥 FETCH PROMPTS (supports search & filter)
+  const fetchPrompts = useCallback(
+      async (params?: { q?: string; outputType?: string }) => {
+        setLoading(true);
+
+        const url = new URL("/api/prompts", window.location.origin);
+
+        if (params?.q) {
+          url.searchParams.set("q", params.q);
+        }
+
+        if (params?.outputType) {
+          url.searchParams.set("outputType", params.outputType);
+        }
+
+        try {
+          const res = await fetch(url.toString());
+          const data = await res.json();
+          setPrompts(Array.isArray(data) ? data : []);
+        } catch {
+          setPrompts([]);
+        } finally {
+          setLoading(false);
+        }
+      },
+      [] // ✅ stable reference
+    );
+
+
+  // 🔹 Initial load
   useEffect(() => {
-    fetch("/api/prompts")
-      .then((res) => res.json())
-      .then((data) => {
-        setPrompts(data || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+    fetchPrompts();
+  }, [fetchPrompts]);
+
 
   return (
     <>
-      <Navbar />
+      {/* 🔍 Navbar with search + filter */}
+      <Navbar onSearchChange={fetchPrompts} />
 
       {/* HERO */}
       <section className="container-app pt-28 text-center">
@@ -50,7 +75,7 @@ export default function Home() {
           Discover Powerful AI Prompts
         </motion.h2>
 
-        <PromptInput />
+        <PromptInput  onSearch={fetchPrompts}/>
       </section>
 
       {/* SAMPLE PROMPTS */}
@@ -59,7 +84,9 @@ export default function Home() {
       {/* ALL PROMPTS */}
       <section className="mt-24">
         {loading ? (
-          <p className="text-center text-zinc-400">Loading prompts...</p>
+          <p className="text-center text-zinc-400">
+            Loading prompts...
+          </p>
         ) : (
           <PromptGrid prompts={prompts} />
         )}

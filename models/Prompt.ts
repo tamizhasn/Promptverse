@@ -3,14 +3,16 @@ import mongoose, { Schema, models } from "mongoose";
 const PromptSchema = new Schema(
   {
     title: { type: String, required: true },
-    description: String,
+    description: { type: String, default: "" },
     promptText: { type: String, required: true },
 
-    category: String,
-    outputType: String,
-    difficulty: String,
+    category: { type: String, index: true },
+    outputType: { type: String, index: true },
+    difficulty: { type: String, index: true },
 
-    previewImage: String,
+    tags: [{ type: String, index: true }],
+
+    previewImage: { type: String },
 
     createdBy: {
       type: Schema.Types.ObjectId,
@@ -18,22 +20,30 @@ const PromptSchema = new Schema(
       required: true,
     },
 
+    views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    copies: { type: Number, default: 0 },
+
+    reportCount: { type: Number, default: 0 },
+    isHidden: { type: Boolean, default: false },
+
     status: {
       type: String,
       enum: ["draft", "published"],
       default: "published",
     },
-
-    // 🛡️ Moderation
-    isHidden: { type: Boolean, default: false },
-    reportCount: { type: Number, default: 0 },
-
-    // 📊 Analytics (NEW)
-    views: { type: Number, default: 0 },
-    likes: { type: Number, default: 0 },
-    copies: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-export default models.Prompt || mongoose.model("Prompt", PromptSchema);
+/* 🔍 TEXT SEARCH INDEX */
+PromptSchema.index({
+  title: "text",
+  description: "text",
+  promptText: "text",
+  category: "text",
+  tags: "text",
+});
+
+export default models.Prompt ||
+  mongoose.model("Prompt", PromptSchema);
