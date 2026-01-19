@@ -1,24 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { connectDB } from "@/lib/mongodb";
 import Prompt from "@/models/Prompt";
-import mongoose from "mongoose";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+/* ============================
+   ADMIN ANALYTICS
+============================ */
+export async function GET(req: NextRequest) {
+  const token = await getToken({ req });
 
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!token || token.role !== "admin") {
+    return NextResponse.json(
+      { message: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   await connectDB();
 
-  const adminId = new mongoose.Types.ObjectId(session.user.id);
-
-  // 🔒 STRICT OWNERSHIP FILTER
+  // 🔒 STRICT OWNERSHIP (string is enough)
   const prompts = await Prompt.find({
-    createdBy: adminId,
+    createdBy: token.id,
   }).lean();
 
   const totals = prompts.reduce(

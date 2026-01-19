@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageUpload from "@/components/ImageUpload";
+import BackButton from "@/components/BackButton";
 
 export default function ProfilePage() {
   const [profileImage, setProfileImage] = useState("");
@@ -15,7 +16,7 @@ export default function ProfilePage() {
 
 
   useEffect(() => {
-    fetch("/api/user/profile")
+    fetch("/api/profile")
       .then((res) => res.json())
       .then((data) => {
         setProfileImage(data.profileImage || "");
@@ -29,7 +30,7 @@ export default function ProfilePage() {
     setLoading(true);
     setMessage("");
 
-    const res = await fetch("/api/user/profile", {
+    const res = await fetch("/api/profile", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -132,6 +133,10 @@ export default function ProfilePage() {
           <p className="text-center text-sm text-green-400">{message}</p>
         )}
       </div>
+      <div className="top-20 py-7 z-40">
+        <BackButton />
+      </div>
+
     </div>
   );
 }

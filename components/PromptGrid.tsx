@@ -4,11 +4,13 @@ import { motion } from "framer-motion";
 import PromptCard from "./PromptCard";
 
 type Props = {
-  prompts: any[];
+  prompts: any;
 };
 
 export default function PromptGrid({ prompts }: Props) {
-  if (!prompts || prompts.length === 0) {
+  if (!Array.isArray(prompts)) return null;
+
+  if (prompts.length === 0) {
     return (
       <p className="text-center text-zinc-500">
         No prompts available
@@ -18,7 +20,6 @@ export default function PromptGrid({ prompts }: Props) {
 
   return (
     <section className="container-prompts">
-      {/* Section title */}
       <motion.h2
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -29,7 +30,6 @@ export default function PromptGrid({ prompts }: Props) {
         All Prompts
       </motion.h2>
 
-      {/* Grid */}
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -47,21 +47,10 @@ export default function PromptGrid({ prompts }: Props) {
           <motion.div
             key={prompt._id}
             variants={{
-              hidden: {
-                opacity: 0,
-                y: 40,
-                scale: 0.98,
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-              },
+              hidden: { opacity: 0, y: 40, scale: 0.98 },
+              visible: { opacity: 1, y: 0, scale: 1 },
             }}
-            transition={{
-              duration: 0.6,
-              ease: "easeOut",
-            }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <PromptCard prompt={prompt} />
           </motion.div>

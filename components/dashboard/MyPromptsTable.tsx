@@ -44,14 +44,19 @@ export default function MyPromptsTable() {
     fetchPrompts();
   }, []);
 
-  const hidePrompt = async (id: string) => {
-    await fetch(`/api/prompts/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isHidden: true }),
-    });
-    fetchPrompts();
-  };
+  const togglePromptVisibility = async (
+      id: string,
+      isHidden: boolean
+    ) => {
+      await fetch(`/api/prompts/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isHidden }),
+      });
+
+      fetchPrompts();
+    };
+
 
   const deletePrompt = async (id: string) => {
     if (!confirm("Delete this prompt permanently?")) return;
@@ -137,11 +142,16 @@ export default function MyPromptsTable() {
 
                 <td className="flex gap-3 py-2">
                   <button
-                    onClick={() => hidePrompt(p._id)}
-                    className="text-xs text-yellow-400 hover:underline"
+                    onClick={() =>
+                      togglePromptVisibility(p._id, !p.isHidden)
+                    }
+                    className={`text-xs hover:underline ${
+                      p.isHidden ? "text-green-400" : "text-yellow-400"
+                    }`}
                   >
-                    Hide
+                    {p.isHidden ? "Unhide" : "Hide"}
                   </button>
+
 
                   <button
                     onClick={() => deletePrompt(p._id)}

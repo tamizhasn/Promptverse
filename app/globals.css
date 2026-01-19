@@ -93,3 +93,21 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* globals.css */
+.label {
+  @apply mb-2 block text-sm font-medium text-zinc-300;
+}
+
+.input {
+  @apply w-full rounded-lg bg-black/60 border border-white/10
+  px-4 py-3 text-sm outline-none
+  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500;
+}
+
+.textarea {
+  @apply w-full resize-none rounded-lg bg-black/60 border border-white/10
+  px-4 py-3 text-sm outline-none
+  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500;
+}
+

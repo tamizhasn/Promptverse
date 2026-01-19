@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+import BackButton from "@/components/BackButton";
 import StatsCards from "@/components/dashboard/StatsCards";
 import AnalyticsCharts from "@/components/dashboard/AnalyticsCharts";
 import MyPromptsTable from "@/components/dashboard/MyPromptsTable";
@@ -18,6 +19,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="container-app space-y-12 py-10 grid-bg">
+      <BackButton label="Home" fallback="/" />
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
       <StatsCards />

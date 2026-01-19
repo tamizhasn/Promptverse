@@ -1,24 +1,44 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+export function LoginForm({
+  onSuccess,
+}: {
+  onSuccess: () => void;
+}) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
     setLoading(true);
+
     const res = await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
+
     setLoading(false);
 
-    if (!res?.error) onSuccess();
-    else alert("Invalid credentials");
+    if (!res?.error) {
+      onSuccess(); 
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+
+      if (!sessionData?.user?.termsAccepted) {
+        router.push("/admin/profile");
+      } else {
+        router.push("/");
+      }
+
+    } else {
+      alert("Invalid credentials");
+    }
   };
 
   return (
@@ -34,6 +54,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         placeholder="Password"
         onChange={(e) => setPassword(e.target.value)}
       />
+
       <button
         onClick={submit}
         disabled={loading}

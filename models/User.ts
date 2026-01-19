@@ -2,27 +2,9 @@ import mongoose, { Schema, models } from "mongoose";
 
 const UserSchema = new Schema(
   {
-    // 🔹 Basic Info
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-      lowercase: true,
-      trim: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-      select: false, // 🔐 never return password by default
-    },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true, select: false },
 
     role: {
       type: String,
@@ -30,49 +12,27 @@ const UserSchema = new Schema(
       default: "user",
     },
 
-    // 🔹 Profile
-    profileImage: {
-      type: String, // Cloudinary / CDN URL
-      default: "",
-    },
+    profileImage: { type: String, default: "" },
+    dob: Date,
+    mobile: String,
 
-    bio: {
-      type: String,
-      maxlength: 300,
-      default: "",
-    },
-
-    dob: {
-      type: Date,
-    },
-
-    mobile: {
-      type: String,
-    },
-
-    // 🔹 Terms & Compliance
+    // ✅ MUST BE HERE
     termsAccepted: {
       type: Boolean,
       default: false,
     },
 
-    // 🔹 Relations
-    createdPrompts: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Prompt",
-      },
-    ],
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
 
-    // 🔹 Account Status (future-proofing)
     isActive: {
       type: Boolean,
       default: true,
     },
   },
-  {
-    timestamps: true, // createdAt & updatedAt
-  }
+  { timestamps: true }
 );
 
 export default models.User || mongoose.model("User", UserSchema);

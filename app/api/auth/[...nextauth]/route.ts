@@ -12,6 +12,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
           return null;
@@ -21,7 +22,9 @@ export const authOptions: NextAuthOptions = {
 
         const user = await User.findOne({
           email: credentials.email,
-        }).select("+password name role profileImage");
+        }).select(
+          "+password name role profileImage termsAccepted profileCompleted"
+        );
 
         if (!user) {
           throw new Error("User not found");
@@ -37,27 +40,34 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user._id.toString(), // 🔑 REQUIRED
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
-          role: user.role,
-          image: user.profileImage,
+          role: user.role as "admin" | "user",
+          image: user.profileImage || undefined,
+          termsAccepted: user.termsAccepted,
+          profileCompleted: user.profileCompleted,
         };
       },
     }),
   ],
 
   session: {
-    strategy: "jwt", 
+    strategy: "jwt",
   },
 
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
-        token.image = user.image;
-        token.name = user.name;
+        token.role = user.role as "admin" | "user";
+        token.image = user.image ?? undefined;
+
+        // 🔥 FIX: normalize null → undefined
+        token.name = user.name ?? undefined;
+
+        token.termsAccepted = user.termsAccepted;
+        token.profileCompleted = user.profileCompleted;
       }
       return token;
     },
@@ -65,9 +75,16 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = token.role as "admin" | "user";
         session.user.image = token.image ?? undefined;
-        session.user.name = token.name as string;
+
+        // 🔥 FIX: normalize null → undefined
+        session.user.name = token.name ?? undefined;
+
+        session.user.termsAccepted =
+          token.termsAccepted ?? false;
+        session.user.profileCompleted =
+          token.profileCompleted ?? false;
       }
       return session;
     },
